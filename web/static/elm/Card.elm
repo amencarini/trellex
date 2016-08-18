@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, onInput)
 import Channel
 import Json.Encode as JE
 
+
 -- MODEL
 
 type alias Model =
@@ -35,7 +36,7 @@ update msg model =
     UpdateDescription description ->
       ({ model | description = description }, Cmd.none, Channel.noMessage)
     Save ->
-      ({ model | isEditable = False } , Cmd.none, Channel.send "card" (encode model))
+      ({ model | isEditable = False } , Cmd.none, Channel.send "card_change" (encode model))
 
 
 -- VIEW

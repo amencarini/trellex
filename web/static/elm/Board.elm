@@ -44,7 +44,6 @@ updateCardList cardListMsg cardList =
     Just cardList -> 
       let
         (updatedCardList, cmd, outMsg) = CardList.update cardListMsg cardList
-        mycmd = Debug.log "cmd in Board" cmd
       in
         (updatedCardList, cmd, outMsg)
 

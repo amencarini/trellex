@@ -1,20 +1,18 @@
 module Trellex exposing (..)
 
 import Board
--- import CardList
--- import Card
 import Decoder
+import Channel
 
 import Html exposing (Html, div, text, button)
 import Html.App
-
--- import Phoenix.Socket
--- import Phoenix.Channel
--- import Phoenix.Push
-
 import Json.Encode
 --import Json.Encode as Encode
 --import Json.Decode as Decode exposing ((:=))
+
+import Phoenix.Socket
+import Phoenix.Channel
+
 
 -- MAIN
 
@@ -30,8 +28,8 @@ main =
 
 -- CONSTANTS
 
--- socketServer : String
--- socketServer = "ws://localhost:4000/socket/websocket"
+socketServer : String
+socketServer = "ws://localhost:4000/socket/websocket"
 
 
 -- MODEL
@@ -42,39 +40,40 @@ type alias Flags =
 
 type alias Model =
   { board : Board.Model
-  --, phxSocket : Phoenix.Socket.Socket Msg
+  , phxSocket : Phoenix.Socket.Socket Msg
   }
 
--- initPhxSocket : Phoenix.Socket.Socket Msg
--- initPhxSocket =
---   Phoenix.Socket.init socketServer
---     |> Phoenix.Socket.withDebug
---     --|> Phoenix.Socket.on "new_msg" "board:lobby" ReceiveMessage
+initPhxSocket : Phoenix.Socket.Socket Msg
+initPhxSocket =
+  Phoenix.Socket.init socketServer
+    |> Phoenix.Socket.withDebug
+    -- |> Phoenix.Socket.on "new_msg" "board:lobby" ReceiveMessage
 
 init : Flags -> (Model, Cmd Msg)
 init initial =
   let
-    --model = Model (Decoder.decodeInitialState initial.value) initPhxSocket
-    model = Model (Decoder.decodeInitialState initial.value)
+    model = Model (Decoder.decodeInitialState initial.value) initPhxSocket
   in
-    (model, Cmd.none)
+    join model
 
 
 -- UPDATE
 
 type Msg
   = MainMsg Board.Msg
-  --= PhoenixMsg (Phoenix.Socket.Msg Msg)
-  --| ReceiveMessage Encode.Value
-  --| SendChange
-  --| JoinChannel
+  | PhoenixMsg (Phoenix.Socket.Msg Msg)
+  -- | ReceiveMessage Encode.Value
+  -- | SendChange
+  -- | JoinChannel
+  -- | ShowJoinedMessage String
+  -- | ShowLeftMessage String
 
-type alias ChatMessage =
-  { body : String
-  }
+-- type alias ChatMessage =
+--   { body : String
+--   }
 
---chatMessageDecoder : Decode.Decoder ChatMessage
---chatMessageDecoder =
+-- chatMessageDecoder : Decode.Decoder ChatMessage
+-- chatMessageDecoder =
 --  Decode.object1 ChatMessage
 --    ("body" := Decode.string)
 
@@ -84,58 +83,70 @@ update msg model =
     MainMsg boardMsg ->
       let
         (updatedBoard, cmd, outMsg) = Board.update boardMsg model.board
-        mycmd = Debug.log "cmd in main" cmd
-        outMsg' = Debug.log "outMsg in main" outMsg
+        (phxSocket, phxCmd) = Channel.push model.phxSocket outMsg
       in
-        -- ({ model | board = updatedBoard }, Cmd.map MainMsg cmd)
-        ({ model | board = updatedBoard }, Cmd.map MainMsg cmd)
+        -- TODO: combine with incoming message from Board? (Cmd.map MainMsg cmd)
+        ({ model | board = updatedBoard }, Cmd.map PhoenixMsg phxCmd)
 
-    --PhoenixMsg msg ->
-    --  let
-    --    ( phxSocket, phxCmd ) = Phoenix.Socket.update msg model.phxSocket
-    --  in
-    --    ( { model | phxSocket = phxSocket }
-    --    , Cmd.map PhoenixMsg phxCmd
-    --    )
+    PhoenixMsg msg ->
+     let
+       ( phxSocket, phxCmd ) = Phoenix.Socket.update msg model.phxSocket
+     in
+       ( { model | phxSocket = phxSocket }
+       , Cmd.map PhoenixMsg phxCmd
+       )
 
-    --ReceiveMessage raw ->
-    --  case Decode.decodeValue chatMessageDecoder raw of
-    --    Ok chatMessage ->
-    --      ({ model | state = chatMessage.body }, Cmd.none)
-    --    Err error ->
-    --      ( model, Cmd.none )
+    -- ReceiveMessage raw ->
+    --   case Decode.decodeValue chatMessageDecoder raw of
+    --     Ok chatMessage ->
+    --       ({ model | state = chatMessage.body }, Cmd.none)
+    --     Err error ->
+    --       ( model, Cmd.none )
 
-    --SendChange ->
-    --  let
-    --    payload = (Encode.object [ ("body", Encode.string "New Message") ])
-    --    push' =
-    --      Phoenix.Push.init "new_msg" "board:lobby"
-    --      |> Phoenix.Push.withPayload payload
-    --    (phxSocket, phxCmd) = Phoenix.Socket.push push' model.phxSocket
-    --    model = {model | phxSocket = phxSocket}
-    --  in
-    --    (model, Cmd.map PhoenixMsg phxCmd)
+    -- SendChange ->
+    --   let
+    --     payload = (Encode.object [ ("body", Encode.string "New Message") ])
+    --     push' =
+    --       Phoenix.Push.init "new_msg" "board:lobby"
+    --       |> Phoenix.Push.withPayload payload
+    --     (phxSocket, phxCmd) = Phoenix.Socket.push push' model.phxSocket
+    --     model = {model | phxSocket = phxSocket}
+    --   in
+    --     (model, Cmd.map PhoenixMsg phxCmd)
 
-    --JoinChannel ->
-    --  let
-    --    channel =
-    --      Phoenix.Channel.init "board:lobby"
-    --        --|> Phoenix.Channel.withPayload userParams
-    --        --|> Phoenix.Channel.onJoin (always (ShowJoinedMessage "board:lobby"))
-    --        --|> Phoenix.Channel.onClose (always (ShowLeftMessage "board:lobby"))
+    -- ShowJoinedMessage channelName ->
+    --   let
+    --     channelName' = Debug.log "Joined" channelName
+    --   in
+    --     ( model, Cmd.none )
 
-    --    (phxSocket, phxCmd) = Phoenix.Socket.join channel model.phxSocket
-    --    model = {model | phxSocket = phxSocket}
-    --  in
-    --    (model, Cmd.map PhoenixMsg phxCmd)
+    -- ShowLeftMessage channelName ->
+    --   let
+    --     channelName' = Debug.log "Left" channelName
+    --   in
+    --     ( model, Cmd.none )
+
+-- CHANNEL
+
+join : Model -> (Model, Cmd Msg)
+join model =
+  let
+    channel =
+      Phoenix.Channel.init "board:lobby"
+        -- |> Phoenix.Channel.withPayload userParams
+        -- |> Phoenix.Channel.onJoin (always (ShowJoinedMessage "board:lobby"))
+        -- |> Phoenix.Channel.onClose (always (ShowLeftMessage "board:lobby"))
+
+    (phxSocket, phxCmd) = Phoenix.Socket.join channel model.phxSocket
+  in
+    ({ model | phxSocket = phxSocket }, Cmd.map PhoenixMsg phxCmd)
 
 
 -- SUBSCRIPTIONS
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
-  --Phoenix.Socket.listen model.phxSocket PhoenixMsg
+  Phoenix.Socket.listen model.phxSocket PhoenixMsg
 
 
 -- VIEW

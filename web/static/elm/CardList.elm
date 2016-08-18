@@ -33,7 +33,6 @@ update msg model =
       let
         card = Dict.get cardId model.cards
         (updatedCard, cmd, outMsg) = updateCard cardMsg card
-        outMsg' = Debug.log "outmessage" outMsg
         updatedCards = Dict.insert cardId updatedCard model.cards
         updatedModel = { model | cards = updatedCards }
       in
@@ -46,7 +45,6 @@ updateCard cardMsg card =
     Just card -> 
       let
         (updatedCard, cmd, outMsg) = Card.update cardMsg card
-        mycmd = Debug.log "cmd in CardList" cmd
       in
         (updatedCard, cmd, outMsg)
 

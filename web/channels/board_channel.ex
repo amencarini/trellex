@@ -1,7 +1,7 @@
 defmodule Trellex.BoardChannel do
   use Trellex.Web, :channel
 
-  intercept ["new_msg"]
+  intercept ["new_msg", "card_change"]
 
   def join("board:lobby", payload, socket) do
     if authorized?(payload) do
@@ -33,6 +33,18 @@ defmodule Trellex.BoardChannel do
   def handle_out("new_msg", payload, socket) do
     IO.puts "pushing #{inspect payload}"
     push socket, "new_msg", payload
+    {:noreply, socket}
+  end
+
+  def handle_in("card_change", payload, socket) do
+    IO.puts "received #{inspect payload}"
+    broadcast! socket, "card_change", payload
+    {:noreply, socket}
+  end
+
+  def handle_out("card_change", payload, socket) do
+    IO.puts "pushing #{inspect payload}"
+    push socket, "card_change", payload
     {:noreply, socket}
   end
 
