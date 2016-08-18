@@ -1,0 +1,29 @@
+/* This file is for your main application css. */
+
+html, body {
+    height: 100%;
+}
+
+.board {
+    background-color: #B21212;
+    padding: 0.5em;
+    height: 100%;
+}
+
+.card-list {
+    display: inline-block;
+    background-color: #FFFC19;
+    width: 30%;
+    margin: 1em;
+    padding: 0.5em;
+}
+
+.card {
+    background-color: #1485CC;
+    margin: 1em;
+    padding: 0.5em;
+}
+
+.clear {
+    clear: both;
+}

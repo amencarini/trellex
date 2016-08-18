@@ -1,0 +1,59 @@
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$addEvent = F2(
+	function (message, model) {
+		var payload = message.payload;
+		var status = payload.status;
+		var _p0 = status;
+		if (_p0 === 'ok') {
+			return _elm_lang$core$Native_Utils.update(
+				model,
+				{
+					refNumber: model.refNumber + 1,
+					connected: true,
+					socketEvents: A2(_elm_lang$core$List_ops['::'], message, model.socketEvents)
+				});
+		} else {
+			return model;
+		}
+	});
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$send = F2(
+	function (model, message) {
+		return A2(
+			_elm_lang$websocket$WebSocket$send,
+			model.socketUrl,
+			A2(
+				_elm_lang$core$Json_Encode$encode,
+				0,
+				_NoRedInk$elm_phoenix$Phoenix_Channel_Model$encodeMessageToSend(message)));
+	});
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$update = F2(
+	function (response, model) {
+		var _p1 = response;
+		switch (_p1.ctor) {
+			case 'ErrorResponse':
+				var _p2 = A2(_elm_lang$core$Debug$log, 'Error from websocket: ', _p1._0);
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+			case 'SuccessfulResponse':
+				return {
+					ctor: '_Tuple2',
+					_0: A2(_NoRedInk$elm_phoenix$Phoenix_Channel_Update$addEvent, _p1._0, model),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return A2(
+					_elm_lang$core$Platform_Cmd_ops['!'],
+					model,
+					_elm_lang$core$Native_List.fromArray(
+						[
+							A2(_NoRedInk$elm_phoenix$Phoenix_Channel_Update$send, model, _p1._0)
+						]));
+		}
+	});
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$SendMessage = function (a) {
+	return {ctor: 'SendMessage', _0: a};
+};
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$ErrorResponse = function (a) {
+	return {ctor: 'ErrorResponse', _0: a};
+};
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Update$SuccessfulResponse = function (a) {
+	return {ctor: 'SuccessfulResponse', _0: a};
+};

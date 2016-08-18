@@ -1,0 +1,84 @@
+var _user$project$Board$updateCardList = F2(
+	function (cardListMsg, cardList) {
+		var _p0 = cardList;
+		if (_p0.ctor === 'Nothing') {
+			return _elm_lang$core$Maybe$Nothing;
+		} else {
+			var _p1 = A2(_user$project$CardList$update, cardListMsg, _p0._0);
+			var updatedCardList = _p1._0;
+			var cmd = _p1._1;
+			return _elm_lang$core$Maybe$Just(updatedCardList);
+		}
+	});
+var _user$project$Board$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		if (_p2.ctor === 'BoardMsg') {
+			var updatedCardLists = A3(
+				_elm_lang$core$Dict$update,
+				_p2._0,
+				_user$project$Board$updateCardList(_p2._1),
+				model.cardLists);
+			var updatedModel = _elm_lang$core$Native_Utils.update(
+				model,
+				{cardLists: updatedCardLists});
+			return {ctor: '_Tuple2', _0: updatedModel, _1: _elm_lang$core$Platform_Cmd$none};
+		} else {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Board$Model = F2(
+	function (a, b) {
+		return {name: a, cardLists: b};
+	});
+var _user$project$Board$NoOp = {ctor: 'NoOp'};
+var _user$project$Board$BoardMsg = F2(
+	function (a, b) {
+		return {ctor: 'BoardMsg', _0: a, _1: b};
+	});
+var _user$project$Board$viewCardList = function (_p3) {
+	var _p4 = _p3;
+	return A2(
+		_elm_lang$html$Html_App$map,
+		_user$project$Board$BoardMsg(_p4._0),
+		_user$project$CardList$view(_p4._1));
+};
+var _user$project$Board$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[
+				_elm_lang$html$Html_Attributes$class('board')
+			]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('title')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text(model.name)
+					])),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('lists')
+					]),
+				A2(
+					_elm_lang$core$List$map,
+					_user$project$Board$viewCardList,
+					_elm_lang$core$Dict$toList(model.cardLists))),
+				A2(
+				_elm_lang$html$Html$div,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$class('clear')
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[]))
+			]));
+};

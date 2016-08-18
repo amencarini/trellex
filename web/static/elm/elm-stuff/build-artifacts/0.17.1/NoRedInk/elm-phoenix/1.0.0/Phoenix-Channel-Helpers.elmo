@@ -1,0 +1,18 @@
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Helpers$turnDecodedResponseIntoServerResponse = function (response) {
+	var _p0 = response;
+	if (_p0.ctor === 'Ok') {
+		var _p2 = _p0._0;
+		var _p1 = _p2.payload.status;
+		if (_p1 === 'ok') {
+			return _NoRedInk$elm_phoenix$Phoenix_Channel_Update$SuccessfulResponse(_p2);
+		} else {
+			return _NoRedInk$elm_phoenix$Phoenix_Channel_Update$ErrorResponse(_p2.payload.status);
+		}
+	} else {
+		return _NoRedInk$elm_phoenix$Phoenix_Channel_Update$ErrorResponse(_p0._0);
+	}
+};
+var _NoRedInk$elm_phoenix$Phoenix_Channel_Helpers$assignResponseType = function (_p3) {
+	return _NoRedInk$elm_phoenix$Phoenix_Channel_Helpers$turnDecodedResponseIntoServerResponse(
+		A2(_elm_lang$core$Json_Decode$decodeString, _NoRedInk$elm_phoenix$Phoenix_Channel_Model$decodeSocketMessage, _p3));
+};

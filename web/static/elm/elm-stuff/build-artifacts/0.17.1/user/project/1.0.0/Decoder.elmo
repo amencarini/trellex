@@ -1,0 +1,70 @@
+var _user$project$Decoder$card = A2(
+	_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+	A2(
+		_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+		A2(
+			_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+			A2(
+				_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+				_elm_lang$core$Json_Decode$succeed(_user$project$Card$Model),
+				A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$int)),
+			A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string)),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'description', _elm_lang$core$Json_Decode$string)),
+	_elm_lang$core$Json_Decode$oneOf(
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(_elm_lang$core$Json_Decode_ops[':='], 'isEditable', _elm_lang$core$Json_Decode$bool),
+				_elm_lang$core$Json_Decode$succeed(false)
+			])));
+var _user$project$Decoder$listToDict = function (idables) {
+	return _elm_lang$core$Dict$fromList(
+		A2(
+			_elm_lang$core$List$map,
+			function (idable) {
+				return {ctor: '_Tuple2', _0: idable.id, _1: idable};
+			},
+			idables));
+};
+var _user$project$Decoder$cardList = A2(
+	_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+	A2(
+		_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+		A2(
+			_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+			_elm_lang$core$Json_Decode$succeed(_user$project$CardList$Model),
+			A2(_elm_lang$core$Json_Decode_ops[':='], 'id', _elm_lang$core$Json_Decode$int)),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string)),
+	A2(
+		_elm_lang$core$Json_Decode$map,
+		_user$project$Decoder$listToDict,
+		A2(
+			_elm_lang$core$Json_Decode_ops[':='],
+			'cards',
+			_elm_lang$core$Json_Decode$list(_user$project$Decoder$card))));
+var _user$project$Decoder$board = A2(
+	_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+	A2(
+		_elm_community$json_extra$Json_Decode_Extra_ops['|:'],
+		_elm_lang$core$Json_Decode$succeed(_user$project$Board$Model),
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'name', _elm_lang$core$Json_Decode$string)),
+	A2(
+		_elm_lang$core$Json_Decode$map,
+		_user$project$Decoder$listToDict,
+		A2(
+			_elm_lang$core$Json_Decode_ops[':='],
+			'lists',
+			_elm_lang$core$Json_Decode$list(_user$project$Decoder$cardList))));
+var _user$project$Decoder$decodeInitialState = function (payload) {
+	var _p0 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$Decoder$board, payload);
+	if (_p0.ctor === 'Ok') {
+		return _p0._0;
+	} else {
+		return _elm_lang$core$Native_Utils.crashCase(
+			'Decoder',
+			{
+				start: {line: 14, column: 3},
+				end: {line: 16, column: 39}
+			},
+			_p0)(_p0._0);
+	}
+};

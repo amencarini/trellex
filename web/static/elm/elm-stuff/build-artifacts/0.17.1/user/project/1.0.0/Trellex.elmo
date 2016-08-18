@@ -1,0 +1,51 @@
+var _user$project$Trellex$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$Trellex$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		var _p1 = A2(_user$project$Board$update, _p0._0, model.board);
+		var updatedBoard = _p1._0;
+		var cmd = _p1._1;
+		return {
+			ctor: '_Tuple2',
+			_0: _elm_lang$core$Native_Utils.update(
+				model,
+				{board: updatedBoard}),
+			_1: _elm_lang$core$Platform_Cmd$none
+		};
+	});
+var _user$project$Trellex$Flags = function (a) {
+	return {value: a};
+};
+var _user$project$Trellex$Model = function (a) {
+	return {board: a};
+};
+var _user$project$Trellex$init = function (initial) {
+	var model = _user$project$Trellex$Model(
+		_user$project$Decoder$decodeInitialState(initial.value));
+	return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+};
+var _user$project$Trellex$ChatMessage = function (a) {
+	return {body: a};
+};
+var _user$project$Trellex$MainMsg = function (a) {
+	return {ctor: 'MainMsg', _0: a};
+};
+var _user$project$Trellex$view = function (model) {
+	return A2(
+		_elm_lang$html$Html_App$map,
+		_user$project$Trellex$MainMsg,
+		_user$project$Board$view(model.board));
+};
+var _user$project$Trellex$main = {
+	main: _elm_lang$html$Html_App$programWithFlags(
+		{init: _user$project$Trellex$init, view: _user$project$Trellex$view, update: _user$project$Trellex$update, subscriptions: _user$project$Trellex$subscriptions}),
+	flags: A2(
+		_elm_lang$core$Json_Decode$andThen,
+		A2(_elm_lang$core$Json_Decode_ops[':='], 'value', _elm_lang$core$Json_Decode$value),
+		function (value) {
+			return _elm_lang$core$Json_Decode$succeed(
+				{value: value});
+		})
+};
