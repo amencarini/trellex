@@ -1,9 +1,11 @@
-module Card exposing (Model, view, Msg, update)
+module Card exposing (Model, Msg, view, update)
 
 import Html exposing (Html, div, text, p, button, input, textarea)
 import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick, onInput)
 
+import Channel
+import Json.Encode as JE
 
 -- MODEL
 
@@ -23,18 +25,18 @@ type Msg
   | UpdateDescription String
   | Save
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg, Channel.OutMsg )
 update msg model =
   case msg of
     Edit ->
-      ({ model | isEditable = True } , Cmd.none )
+      ({ model | isEditable = True }, Cmd.none, Channel.noMessage)
     UpdateName name ->
-      ({ model | name = name } , Cmd.none )
+      ({ model | name = name }, Cmd.none, Channel.noMessage)
     UpdateDescription description ->
-      ({ model | description = description } , Cmd.none )
+      ({ model | description = description }, Cmd.none, Channel.noMessage)
     Save ->
-      ({ model | isEditable = False } , Cmd.none )
-    
+      ({ model | isEditable = False } , Cmd.none, Channel.send "card" (encode model))
+
 
 -- VIEW
 
@@ -57,4 +59,12 @@ normalView model =
     [class "card", onClick Edit] 
     [ div [class "title"] [text model.name]
     , p [class "description"] [text model.description]
+    ]
+
+encode : Model -> JE.Value
+encode record =
+  JE.object
+    [ ("id",  JE.int <| record.id)
+    , ("name",  JE.string <| record.name)
+    , ("description",  JE.string <| record.description)
     ]

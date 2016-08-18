@@ -1,11 +1,12 @@
 module CardList exposing (Model, view, Msg, update)
 
-import Card
 import Dict exposing (Dict)
-
 import Html exposing (Html, div, text)
 import Html.App
 import Html.Attributes exposing (class)
+
+import Card
+import Channel
 
 
 -- MODEL
@@ -16,31 +17,38 @@ type alias Model =
   , cards : Dict Int Card.Model
   }
 
+nullCard : Card.Model
+nullCard = Card.Model 0 "" "" False
+
 
 -- UPDATE
 
 type Msg
   = CardListMsg Int Card.Msg
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> Model -> (Model, Cmd Msg, Channel.OutMsg)
 update msg model =
   case msg of
     CardListMsg cardId cardMsg ->
       let
-        updatedCards = Dict.update cardId (updateCard cardMsg) model.cards
+        card = Dict.get cardId model.cards
+        (updatedCard, cmd, outMsg) = updateCard cardMsg card
+        outMsg' = Debug.log "outmessage" outMsg
+        updatedCards = Dict.insert cardId updatedCard model.cards
         updatedModel = { model | cards = updatedCards }
       in
-        (updatedModel, Cmd.none)
+        (updatedModel, Cmd.map (CardListMsg cardId) cmd, outMsg)
 
-updateCard : Card.Msg -> Maybe Card.Model -> Maybe Card.Model
+updateCard : Card.Msg -> Maybe Card.Model -> (Card.Model, Cmd Card.Msg, Channel.OutMsg)
 updateCard cardMsg card =
   case card of
-    Nothing -> Nothing
+    Nothing -> (nullCard, Cmd.none, Channel.noMessage)
     Just card -> 
       let
-        (updatedCard, cmd) = Card.update cardMsg card
+        (updatedCard, cmd, outMsg) = Card.update cardMsg card
+        mycmd = Debug.log "cmd in CardList" cmd
       in
-        Just updatedCard
+        (updatedCard, cmd, outMsg)
 
 
 -- VIEW

@@ -83,9 +83,12 @@ update msg model =
   case msg of
     MainMsg boardMsg ->
       let
-        (updatedBoard, cmd) = Board.update boardMsg model.board
+        (updatedBoard, cmd, outMsg) = Board.update boardMsg model.board
+        mycmd = Debug.log "cmd in main" cmd
+        outMsg' = Debug.log "outMsg in main" outMsg
       in
-        ({ model | board = updatedBoard }, Cmd.none)
+        -- ({ model | board = updatedBoard }, Cmd.map MainMsg cmd)
+        ({ model | board = updatedBoard }, Cmd.map MainMsg cmd)
 
     --PhoenixMsg msg ->
     --  let

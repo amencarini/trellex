@@ -1,7 +1,0 @@
-var _user$project$Repl$t_s_o_l = {ctor: '_Tuple0'};
-var _user$project$Repl$dict = _elm_lang$core$Dict$fromList(
-	_elm_lang$core$Native_List.fromArray(
-		[
-			{ctor: '_Tuple2', _0: 1, _1: 'A'},
-			{ctor: '_Tuple2', _0: 2, _1: 'b'}
-		]));
