@@ -1,8 +1,6 @@
 defmodule Trellex.Card do
   use Trellex.Web, :model
 
-  @derive {Poison.Encoder, only: [:id, :name, :description]}
-
   schema "cards" do
     field :name, :string
     field :description, :string
@@ -18,5 +16,17 @@ defmodule Trellex.Card do
     struct
     |> cast(params, [:name, :description])
     |> validate_required([:name, :description])
+  end
+end
+
+defimpl Poison.Encoder, for: Trellex.Card do
+  def encode(model, opts) do
+    %{
+      id: model.id,
+      name: model.name,
+      description: model.description,
+      listId: model.list_id
+    }
+    |> Poison.Encoder.encode(opts)
   end
 end

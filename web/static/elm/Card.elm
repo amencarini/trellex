@@ -12,6 +12,7 @@ import Json.Encode as JE
 
 type alias Model =
     { id : Int
+    , listId: Int
     , name : String
     , description : String
     , isEditable : Bool
@@ -80,6 +81,7 @@ encode : Model -> JE.Value
 encode record =
     JE.object
         [ ( "id", JE.int <| record.id )
+        , ( "list_id", JE.int <| record.listId )
         , ( "name", JE.string <| record.name )
         , ( "description", JE.string <| record.description )
         ]

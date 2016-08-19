@@ -56,6 +56,7 @@ initPhxSocket : Phoenix.Socket.Socket Msg
 initPhxSocket =
     Phoenix.Socket.init socketServer
         |> Phoenix.Socket.withDebug
+        |> Phoenix.Socket.on "card_change" "board:lobby" ReceiveCardChange
 
 
 
@@ -66,7 +67,7 @@ init : Flags -> ( Model, Cmd Msg )
 init initial =
     let
         model =
-            Model (Decoder.decodeInitialState initial.value) initPhxSocket
+            Model (Decoder.decodeState initial.value) initPhxSocket
     in
         join model
 
@@ -78,6 +79,7 @@ init initial =
 type Msg
     = MainMsg Board.Msg
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
+    | ReceiveCardChange Json.Encode.Value
 
 
 
@@ -117,6 +119,13 @@ update msg model =
                 ( { model | phxSocket = phxSocket }
                 , Cmd.map PhoenixMsg phxCmd
                 )
+
+        ReceiveCardChange msg ->
+            let
+                msg' = Debug.log "msg in card received change" msg
+            in
+                ( Model (Decoder.decodeState msg) model.phxSocket, Cmd.none )
+
 
 
 

@@ -8,8 +8,8 @@ import Json.Decode exposing (Decoder, Value, (:=), succeed, int, string, list, b
 import Json.Decode.Extra exposing ((|:))
 
 
-decodeInitialState : Value -> Board.Model
-decodeInitialState payload =
+decodeState : Value -> Board.Model
+decodeState payload =
     case decodeValue board payload of
         Ok val ->
             val
@@ -44,6 +44,7 @@ card : Decoder Card.Model
 card =
     succeed Card.Model
         |: ("id" := int)
+        |: ("listId" := int)
         |: ("name" := string)
         |: ("description" := string)
         |: (oneOf [ "isEditable" := bool, succeed False ])

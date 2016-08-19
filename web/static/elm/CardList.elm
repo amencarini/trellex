@@ -20,7 +20,7 @@ type alias Model =
 
 nullCard : Card.Model
 nullCard =
-    Card.Model 0 "" "" False
+    Card.Model 0 0 "" "" False
 
 
 

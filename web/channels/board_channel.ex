@@ -3,6 +3,10 @@ defmodule Trellex.BoardChannel do
 
   intercept ["new_msg", "card_change"]
 
+  alias Trellex.Repo
+  alias Trellex.Card
+  alias Trellex.Board
+
   def join("board:lobby", payload, socket) do
     if authorized?(payload) do
       {:ok, socket}
@@ -30,15 +34,22 @@ defmodule Trellex.BoardChannel do
     {:noreply, socket}
   end
 
-  def handle_out("new_msg", payload, socket) do
-    IO.puts "pushing #{inspect payload}"
-    push socket, "new_msg", payload
+  def handle_in("card_change", payload, socket) do
+    IO.puts "received #{inspect payload}"
+
+    card = Repo.get!(Card, payload["id"])
+    changeset = Card.changeset(card, payload)
+    Repo.update!(changeset)
+
+    new_payload = board_state |> Poison.encode! |> Poison.Parser.parse!
+
+    broadcast! socket, "card_change", new_payload
     {:noreply, socket}
   end
 
-  def handle_in("card_change", payload, socket) do
-    IO.puts "received #{inspect payload}"
-    broadcast! socket, "card_change", payload
+  def handle_out("new_msg", payload, socket) do
+    IO.puts "pushing #{inspect payload}"
+    push socket, "new_msg", payload
     {:noreply, socket}
   end
 
@@ -51,5 +62,9 @@ defmodule Trellex.BoardChannel do
   # Add authorization logic here as required.
   defp authorized?(_payload) do
     true
+  end
+
+  defp board_state do
+    Repo.get(Board, 1) |> Repo.preload([{:lists, :cards}])
   end
 end
