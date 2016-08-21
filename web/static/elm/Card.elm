@@ -1,4 +1,4 @@
-module Card exposing (Model, Msg, view, update)
+module Card exposing (Model, Msg, view, update, none)
 
 import Html exposing (Html, div, text, p, button, input, textarea)
 import Html.Attributes exposing (class, value)
@@ -12,11 +12,16 @@ import Json.Encode as JE
 
 type alias Model =
     { id : Int
-    , listId: Int
+    , listId : Int
     , name : String
     , description : String
     , isEditable : Bool
     }
+
+
+none : Model
+none =
+    Model 0 0 "" "" False
 
 
 

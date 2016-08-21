@@ -41,9 +41,9 @@ defmodule Trellex.BoardChannel do
     changeset = Card.changeset(card, payload)
     Repo.update!(changeset)
 
-    new_payload = board_state |> Poison.encode! |> Poison.Parser.parse!
+    {:ok, card} = Repo.update(changeset)
 
-    broadcast! socket, "card_change", new_payload
+    broadcast! socket, "card_change", card
     {:noreply, socket}
   end
 

@@ -1,6 +1,7 @@
 module Decoder exposing (..)
 
-import Board
+-- import Board
+
 import CardList
 import Card
 import Dict exposing (Dict)
@@ -8,9 +9,18 @@ import Json.Decode exposing (Decoder, Value, (:=), succeed, int, string, list, b
 import Json.Decode.Extra exposing ((|:))
 
 
-decodeState : Value -> Board.Model
-decodeState payload =
-    case decodeValue board payload of
+-- decodeState : Value -> Board.Model
+-- decodeState payload =
+--     case decodeValue board payload of
+--         Ok val ->
+--             val
+--         Err message ->
+--             Debug.crash message
+
+
+initialCards : Value -> Dict Int Card.Model
+initialCards payload =
+    case decodeValue (list card |> map listToDict) payload of
         Ok val ->
             val
 
@@ -18,11 +28,32 @@ decodeState payload =
             Debug.crash message
 
 
-board : Decoder Board.Model
-board =
-    succeed Board.Model
-        |: ("name" := string)
-        |: ("lists" := list cardList |> map listToDict)
+newCard : Value -> Card.Model
+newCard payload =
+    case decodeValue card payload of
+        Ok val ->
+            val
+
+        Err message ->
+            Debug.crash message
+
+
+initialCardLists : Value -> Dict Int CardList.Model
+initialCardLists payload =
+    case decodeValue (list cardList |> map listToDict) payload of
+        Ok val ->
+            val
+
+        Err message ->
+            Debug.crash message
+
+
+
+-- board : Decoder Board.Model
+-- board =
+--     succeed Board.Model
+--         |: ("name" := string)
+--         |: ("lists" := list cardList |> map listToDict)
 
 
 cardList : Decoder CardList.Model
@@ -30,7 +61,10 @@ cardList =
     succeed CardList.Model
         |: ("id" := int)
         |: ("name" := string)
-        |: ("cards" := list card |> map listToDict)
+
+
+
+-- |: ("cards" := list card |> map listToDict)
 
 
 listToDict : List { idable | id : Int } -> Dict Int { idable | id : Int }

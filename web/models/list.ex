@@ -1,7 +1,7 @@
 defmodule Trellex.List do
   use Trellex.Web, :model
 
-  @derive {Poison.Encoder, only: [:id, :name, :cards]}
+  @derive {Poison.Encoder, only: [:id, :name]}
 
   schema "lists" do
     field :name, :string

@@ -1,16 +1,14 @@
 module Trellex exposing (..)
 
-import Board
+import CardList
+import Card
 import Decoder
 import Channel
 import Html exposing (Html, div, text, button)
+import Html.Attributes exposing (class)
 import Html.App
 import Json.Encode
-
-
---import Json.Encode as Encode
---import Json.Decode as Decode exposing ((:=))
-
+import Dict exposing (Dict)
 import Phoenix.Socket
 import Phoenix.Channel
 
@@ -42,12 +40,16 @@ socketServer =
 
 
 type alias Flags =
-    { value : Json.Encode.Value
+    { cards : Json.Encode.Value
+    , cardLists : Json.Encode.Value
+    , boardName : String
     }
 
 
 type alias Model =
-    { board : Board.Model
+    { cards : Dict Int Card.Model
+    , cardLists : Dict Int CardList.Model
+    , boardName : String
     , phxSocket : Phoenix.Socket.Socket Msg
     }
 
@@ -59,15 +61,15 @@ initPhxSocket =
         |> Phoenix.Socket.on "card_change" "board:lobby" ReceiveCardChange
 
 
-
--- |> Phoenix.Socket.on "new_msg" "board:lobby" ReceiveMessage
-
-
 init : Flags -> ( Model, Cmd Msg )
 init initial =
     let
         model =
-            Model (Decoder.decodeState initial.value) initPhxSocket
+            Model
+                (Decoder.initialCards initial.cards)
+                (Decoder.initialCardLists initial.cardLists)
+                initial.boardName
+                initPhxSocket
     in
         join model
 
@@ -77,39 +79,35 @@ init initial =
 
 
 type Msg
-    = MainMsg Board.Msg
+    = CardMsg Int Card.Msg
     | PhoenixMsg (Phoenix.Socket.Msg Msg)
     | ReceiveCardChange Json.Encode.Value
 
 
 
--- | ReceiveMessage Encode.Value
--- | SendChange
--- | JoinChannel
 -- | ShowJoinedMessage String
 -- | ShowLeftMessage String
--- type alias ChatMessage =
---   { body : String
---   }
--- chatMessageDecoder : Decode.Decoder ChatMessage
--- chatMessageDecoder =
---  Decode.object1 ChatMessage
---    ("body" := Decode.string)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        MainMsg boardMsg ->
+    case Debug.log "got msg" msg of
+        CardMsg cardId cardMsg ->
             let
-                ( updatedBoard, cmd, outMsg ) =
-                    Board.update boardMsg model.board
+                card =
+                    Dict.get cardId model.cards
+
+                ( updatedCard, cmd, outMsg ) =
+                    updateCard cardMsg card
 
                 ( phxSocket, phxCmd ) =
-                    Channel.push model.phxSocket outMsg
+                    Channel.push model.phxSocket (Debug.log "outMsg" outMsg)
+
+                updatedCards =
+                    Dict.insert cardId updatedCard model.cards
             in
                 -- TODO: combine with incoming message from Board? (Cmd.map MainMsg cmd)
-                ( { model | board = updatedBoard }, Cmd.map PhoenixMsg phxCmd )
+                ( { model | cards = updatedCards }, Cmd.map PhoenixMsg phxCmd )
 
         PhoenixMsg msg ->
             let
@@ -120,31 +118,18 @@ update msg model =
                 , Cmd.map PhoenixMsg phxCmd
                 )
 
-        ReceiveCardChange msg ->
+        ReceiveCardChange cardJson ->
             let
-                msg' = Debug.log "msg in card received change" msg
+                card =
+                    Decoder.newCard cardJson
+
+                cards' =
+                    updateCards card model.cards
             in
-                ( Model (Decoder.decodeState msg) model.phxSocket, Cmd.none )
+                ( { model | cards = cards' }, Cmd.none )
 
 
 
-
--- ReceiveMessage raw ->
---   case Decode.decodeValue chatMessageDecoder raw of
---     Ok chatMessage ->
---       ({ model | state = chatMessage.body }, Cmd.none)
---     Err error ->
---       ( model, Cmd.none )
--- SendChange ->
---   let
---     payload = (Encode.object [ ("body", Encode.string "New Message") ])
---     push' =
---       Phoenix.Push.init "new_msg" "board:lobby"
---       |> Phoenix.Push.withPayload payload
---     (phxSocket, phxCmd) = Phoenix.Socket.push push' model.phxSocket
---     model = {model | phxSocket = phxSocket}
---   in
---     (model, Cmd.map PhoenixMsg phxCmd)
 -- ShowJoinedMessage channelName ->
 --   let
 --     channelName' = Debug.log "Joined" channelName
@@ -155,6 +140,33 @@ update msg model =
 --     channelName' = Debug.log "Left" channelName
 --   in
 --     ( model, Cmd.none )
+
+
+updateCards : Card.Model -> Dict Int Card.Model -> Dict Int Card.Model
+updateCards newCard cards =
+    let
+        update maybeCard =
+            case maybeCard of
+                Nothing ->
+                    Nothing
+
+                Just maybeCard ->
+                    Just newCard
+    in
+        Dict.update newCard.id update cards
+
+
+updateCard : Card.Msg -> Maybe Card.Model -> ( Card.Model, Cmd Card.Msg, Channel.OutMsg )
+updateCard cardMsg card =
+    case card of
+        Nothing ->
+            ( Card.none, Cmd.none, Channel.noMessage )
+
+        Just card ->
+            Card.update cardMsg card
+
+
+
 -- CHANNEL
 
 
@@ -188,4 +200,28 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    Html.App.map MainMsg (Board.view model.board)
+    div [ class "board" ]
+        [ div [ class "title" ] [ text model.boardName ]
+        , div [ class "cards" ] (List.map (viewCardList model.cards) (Dict.toList model.cardLists))
+        , div [ class "clear" ] []
+        ]
+
+
+viewCardList : Dict Int Card.Model -> ( Int, CardList.Model ) -> Html Msg
+viewCardList cards ( cardListId, cardList ) =
+    let
+        belongsToList cardList cardId card =
+            cardList.id == card.listId
+
+        cards' =
+            Dict.filter (belongsToList cardList) cards
+    in
+        div [ class "card-list" ]
+            [ div [ class "title" ] [ text cardList.name ]
+            , div [ class "cards" ] (List.map viewCard (Dict.toList cards'))
+            ]
+
+
+viewCard : ( Int, Card.Model ) -> Html Msg
+viewCard ( cardId, card ) =
+    Html.App.map (CardMsg cardId) (Card.view card)

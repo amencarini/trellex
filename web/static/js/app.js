@@ -21,4 +21,8 @@ import "phoenix_html"
 // import socket from "./socket"
 
 const elmDiv = document.querySelector("#elm-container");
-const elmApp = Elm.Trellex.embed(elmDiv, {value: state});
+const elmApp = Elm.Trellex.embed(elmDiv, {
+  cards: cards,
+  cardLists: cardLists,
+  boardName: boardName
+});
