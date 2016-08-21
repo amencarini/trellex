@@ -1,5 +1,6 @@
 module Card exposing (Model, Msg, view, update, none)
 
+import String
 import Html exposing (Html, div, text, p, button, input, textarea)
 import Html.Attributes exposing (class, value)
 import Html.Events exposing (onClick, onInput)
@@ -32,6 +33,7 @@ type Msg
     = Edit
     | UpdateName String
     | UpdateDescription String
+    | UpdateListId String
     | Save
 
 
@@ -46,6 +48,18 @@ update msg model =
 
         UpdateDescription description ->
             ( { model | description = description }, Cmd.none, Channel.noMessage )
+
+        UpdateListId listId ->
+            let
+                toNumber string =
+                    case String.toInt string of
+                        Ok number ->
+                            number
+
+                        Err error ->
+                            model.listId
+            in
+                ( { model | listId = toNumber listId }, Cmd.none, Channel.noMessage )
 
         Save ->
             ( { model | isEditable = False }, Cmd.none, Channel.send "card_change" (encode model) )
@@ -69,6 +83,7 @@ editView model =
         [ class "card" ]
         [ input [ class "title", value model.name, onInput UpdateName ] []
         , textarea [ class "description", onInput UpdateDescription ] [ text model.description ]
+        , input [ class "listId", onInput UpdateListId, value (toString model.listId) ] []
         , button [ onClick Save ] [ text "Save" ]
         ]
 

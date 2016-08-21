@@ -14,7 +14,7 @@ defmodule Trellex.Card do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:name, :description])
+    |> cast(params, [:name, :description, :list_id])
     |> validate_required([:name, :description])
   end
 end
