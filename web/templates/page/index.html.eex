@@ -1,7 +1,0 @@
-<div id="elm-container"></div>
-
-<script type="text/javascript">
-  var cards = <%= raw @cards %>;
-  var cardLists = <%= raw @card_lists %>;
-  var boardName = "<%= raw @board_name %>";
-</script>

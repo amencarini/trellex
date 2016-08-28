@@ -1,20 +1,9 @@
-module CardList exposing (Model, Msg)
-
-import Card
-
+module CardList exposing (CardList)
 
 -- MODEL
 
 
-type alias Model =
+type alias CardList =
     { id : Int
     , name : String
     }
-
-
-
--- UPDATE
-
-
-type Msg
-    = CardListMsg Int Card.Msg

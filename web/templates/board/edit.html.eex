@@ -1,0 +1,6 @@
+<h2>Edit board</h2>
+
+<%= render "form.html", changeset: @changeset,
+                        action: board_path(@conn, :update, @board) %>
+
+<%= link "Back", to: board_path(@conn, :index) %>

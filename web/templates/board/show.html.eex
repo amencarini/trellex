@@ -1,0 +1,17 @@
+<div id="elm-container"></div>
+
+<%= link "Edit", to: board_path(@conn, :edit, @board) %>
+<%= link "Back", to: board_path(@conn, :index) %>
+
+<script src="<%= static_path(@conn, "/js/elm/main.js") %>"></script>
+<script type="text/javascript">
+  let cards = <%= raw @cards %>
+  let cardLists = <%= raw @card_lists %>
+  let boardName = "<%= raw @board.name %>"
+  const elmDiv = document.querySelector("#elm-container");
+  const elmApp = Elm.Main.embed(elmDiv, {
+    cards: cards,
+    cardLists: cardLists,
+    boardName: boardName
+  })
+</script>
